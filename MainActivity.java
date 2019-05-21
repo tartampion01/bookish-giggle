@@ -33,7 +33,7 @@ public class MainActivity extends Activity  {
 
         wv1=(WebView)findViewById(R.id.webView);
         wv1.setWebViewClient(new MyBrowser());
-/*git*/
+/*git git git*/
         wv1.getSettings().setLoadsImagesAutomatically(true);
         wv1.getSettings().setJavaScriptEnabled(true);
         wv1.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
