@@ -1,5 +1,6 @@
 package com.example.ptourigny.myapplication;
 import android.app.Activity;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,7 +34,7 @@ public class MainActivity extends Activity  {
 
         wv1=(WebView)findViewById(R.id.webView);
         wv1.setWebViewClient(new MyBrowser());
-/*git git git*/
+
         wv1.getSettings().setLoadsImagesAutomatically(true);
         wv1.getSettings().setJavaScriptEnabled(true);
         wv1.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
@@ -41,6 +42,12 @@ public class MainActivity extends Activity  {
         CookieManager.getInstance().setAcceptCookie(true);
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CookieManager.getInstance().setAcceptThirdPartyCookies(wv1,true);
+
+            ///* To enable web view debugging
+            if (0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE)) {
+                WebView.setWebContentsDebuggingEnabled(true);
+            }
+            /**/
         }
 
         wv1.getSettings().setAppCacheMaxSize( 5 * 1024 * 1024 ); // 5MB
