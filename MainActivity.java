@@ -96,14 +96,8 @@ public class MainActivity extends Activity  {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_BACK:
-                    if (wv1.canGoBack()) {
-                        wv1.goBack();
-                    } else {
-                        finish();
-                    }
-                    return true;
+                    return false; // DISABLE BACK BUTTON FOR APPLICATION
             }
-
         }
         return super.onKeyDown(keyCode, event);
     }
