@@ -1,7 +1,9 @@
 package com.example.ptourigny.myapplication;
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.net.http.SslError;
@@ -20,12 +22,15 @@ import android.webkit.SslErrorHandler;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+
 public class MainActivity extends Activity  {
 
     private WebView wv1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         setContentView(R.layout.activity_main);
 
         //String url = "http://www.interlivraison.com/login.php";
@@ -106,6 +111,25 @@ public class MainActivity extends Activity  {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService( CONNECTIVITY_SERVICE );
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState )
+    {
+        super.onSaveInstanceState(outState);
+        wv1.saveState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        super.onRestoreInstanceState(savedInstanceState);
+        wv1.restoreState(savedInstanceState);
     }
 
     private class MyBrowser extends WebViewClient {
