@@ -6,8 +6,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Picture;
 import android.os.Build;
 import android.os.Bundle;
 import android.net.http.SslError;
@@ -27,7 +27,6 @@ import android.webkit.SslErrorHandler;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.widget.Toast;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
@@ -49,24 +48,37 @@ public class MainActivity extends Activity  {
         String url = "https://interlivraison.reseaudynamique.com/login.php";
         //String url = "https://interlivraison.reseaudynamique.com/__DEV/login.php";
 
-        wv1=(WebView)findViewById(R.id.webView);
+        wv1=findViewById(R.id.webView);
         wv1.setWebViewClient(new MyBrowser() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 //Is the url the login-page?
-                if (url.equals("https://interlivraison.reseaudynamique.com/login.php") == true) {
+                if (url.equalsIgnoreCase("https://interlivraison.reseaudynamique.com/login.php")) {
 
                     //load javascript to set the values to input fields
+                    Boolean callFunction = false;
                     SharedPreferences prefs = getPreferences(MODE_PRIVATE);
                     String usr = prefs.getString("username", null);
                     String pwd = prefs.getString("password", null);
 
-                    if (usr == null || pwd == null) {
-                        //we  have no values - leave input fields blank
-                        return;
+                    // Use callFunction to validate that we have values and that they are not null or undefined
+                    if( usr != null && pwd != null ){
+                        // values might still be 'undefined' even if not null
+                        callFunction = !usr.equalsIgnoreCase("undefined") && !pwd.equalsIgnoreCase("undefined");
                     }
 
-                    view.loadUrl("javascript:fillValues('" + usr + "','" + pwd + "');");
+                    if (callFunction) {
+                        view.loadUrl("javascript:fillUserNamePassword('" + usr + "','" + pwd + "');");
+                    }
+
+                    // VERIFY VERSION OF APP AGAINST VALUE STORED ON WEBSITE. IF NEEDED A LINK TO UPDATE WILL BE PRESENTED TO USER
+                    try {
+                        ActivityInfo ai = getPackageManager().getActivityInfo(getComponentName(),PackageManager.GET_META_DATA);
+                        Object APK_version = ai.metaData.get("APK_version");
+                        view.loadUrl("javascript:checkVersion('" + APK_version + "');");
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
