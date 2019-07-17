@@ -1,18 +1,24 @@
 package com.example.ptourigny.myapplication;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
+import android.graphics.Picture;
 import android.os.Build;
 import android.os.Bundle;
 import android.net.http.SslError;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -21,12 +27,16 @@ import android.webkit.SslErrorHandler;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.widget.Toast;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
 
 public class MainActivity extends Activity  {
 
     private WebView wv1;
+
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,13 +45,35 @@ public class MainActivity extends Activity  {
 
         //String url = "http://www.interlivraison.com/login.php";
         //String url = "http://www.betainterlivraison.camionbeaudoin.com/login.php";
+
         String url = "https://interlivraison.reseaudynamique.com/login.php";
+        //String url = "https://interlivraison.reseaudynamique.com/__DEV/login.php";
 
         wv1=(WebView)findViewById(R.id.webView);
-        wv1.setWebViewClient(new MyBrowser());
+        wv1.setWebViewClient(new MyBrowser() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                //Is the url the login-page?
+                if (url.equals("https://interlivraison.reseaudynamique.com/login.php") == true) {
+
+                    //load javascript to set the values to input fields
+                    SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+                    String usr = prefs.getString("username", null);
+                    String pwd = prefs.getString("password", null);
+
+                    if (usr == null || pwd == null) {
+                        //we  have no values - leave input fields blank
+                        return;
+                    }
+                    view.loadUrl("javascript:fillValues('" + usr + "','" + pwd + "');");
+                }
+            }
+        });
 
         wv1.getSettings().setLoadsImagesAutomatically(true);
         wv1.getSettings().setJavaScriptEnabled(true);
+        wv1.addJavascriptInterface(new JavaScriptInterface(), "Android");
+
         wv1.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
         CookieManager.getInstance().setAcceptCookie(true);
@@ -62,7 +94,6 @@ public class MainActivity extends Activity  {
         wv1.getSettings().setUseWideViewPort(true);
         wv1.getSettings().setCacheMode( WebSettings.LOAD_DEFAULT ); // load online by default
         wv1.getSettings().setDomStorageEnabled(true); // Otherwise we cant navigate pages offline and keep signature data. Use of window.localStorage in js files
-
 
         /*
         if ( !isNetworkAvailable() ) { // loading offline
@@ -119,7 +150,7 @@ public class MainActivity extends Activity  {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState )
+    protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
         wv1.saveState(outState);
@@ -146,5 +177,25 @@ public class MainActivity extends Activity  {
         }
     }
 
+    private class JavaScriptInterface {
+
+        /**
+         * this should be triggered when user and pwd is correct, maybe after
+         * successful login
+         */
+        @JavascriptInterface
+        public void saveValues (String usr, String pwd) {
+
+            if (usr == null || pwd == null) {
+                return;
+            }
+
+            //save the values in SharedPrefs
+            SharedPreferences.Editor editor = getPreferences(MODE_PRIVATE).edit();
+            editor.putString("username", usr);
+            editor.putString("password", pwd);
+            editor.apply();
+        }
+    }
 
 }
