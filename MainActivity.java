@@ -65,6 +65,7 @@ public class MainActivity extends Activity  {
                         //we  have no values - leave input fields blank
                         return;
                     }
+
                     view.loadUrl("javascript:fillValues('" + usr + "','" + pwd + "');");
                 }
             }
